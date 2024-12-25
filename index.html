@@ -3,262 +3,327 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Support Chat - Admin</title>
+    <title>Admin User Management</title>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
     <style>
         body {
             font-family: Arial, sans-serif;
-            background-color: #f0f0f0;
-            margin: 0;
-            padding: 0;
+            margin: 20px;
         }
-        #admin-container {
-            display: flex;
-            flex-direction: column;
-            height: 100vh;
+        table {
+            width: 100%;
+            border-collapse: collapse;
         }
-        #admin-header {
-            background: #6200ea;
-            color: #fff;
-            padding: 15px;
-            text-align: center;
-            font-size: 18px;
+        table, th, td {
+            border: 1px solid black;
         }
-        #chat-list {
-            flex: 1;
-            overflow-y: auto;
-            background: #fff;
+        th, td {
             padding: 10px;
-            border-right: 1px solid #ddd;
+            text-align: left;
         }
-        #chat-view {
-            flex: 2;
-            display: flex;
-            flex-direction: column;
+        th {
+            background-color: #f2f2f2;
         }
-        #messages {
-            flex: 1;
-            overflow-y: auto;
-            padding: 10px;
-            border-bottom: 1px solid #ddd;
-            display: flex;
-            flex-direction: column;
+        .button {
+            padding: 5px 10px;
+            cursor: pointer;
         }
-        .message {
-            margin: 10px 0;
-            position: relative;
-            display: flex;
+        .ban {
+            background-color: red;
+            color: white;
         }
-        .message .content {
-            display: inline-block;
-            padding: 10px;
-            border-radius: 8px;
-            max-width: 80%;
+        .unban {
+            background-color: green;
+            color: white;
         }
-        .message .content small {
-            display: block;
-            font-size: 10px;
-            color: #fcf6f6;
-            text-align: right;
+        .delete {
+            background-color: darkgray;
+            color: white;
         }
-        .message.user {
-            justify-content: flex-start;
+        .popup {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: white;
+            padding: 20px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            z-index: 1000;
+            width: 80%;
+            max-width: 500px;
+            display: none;
         }
-        .message.user .content {
-            background: #a0a0a0;
+        .popup-header {
+            font-size: 20px;
+            margin-bottom: 10px;
         }
-        .message.admin {
-            justify-content: flex-end;
-        }
-        .message.admin .content {
-            background: #028d47;
-            color: #fffcfc;
-        }
-        .delete-btn {
-            position: absolute;
-            top: 5px;
-            right: 5px;
-            background: red;
-            color: #fff;
+        .btn {
+            background-color: #03050f;
+            color: white;
+            padding: 10px 14px;
             border: none;
-            border-radius: 50%;
             cursor: pointer;
-            font-size: 10px;
+            margin: 5px;
         }
-        #admin-input {
-            display: flex;
-            padding: 10px;
-            background: #f9f9f9;
-        }
-        #admin-input input {
-            flex: 1;
-            padding: 10px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            margin-right: 10px;
-        }
-        #admin-input button {
-            padding: 15px 20px;
-            border: none;
-            background: #6200ea;
-            color: #fff;
-            border-radius: 6px;
-            cursor: pointer;
-        }
-        #chat-list div {
-            padding: 10px;
-            border-bottom: 1px solid #ddd;
-            cursor: pointer;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        #chat-list div:hover {
-            background: #f0f0f0;
-        }
-        #chat-list div.active {
-            background: #6200ea;
-            color: #fff;
-        }
-        .unread-dot {
-            width: 10px;
-            height: 10px;
-            background: red;
-            border-radius: 50%;
+        .overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            display: none;
+            z-index: 999;
         }
     </style>
 </head>
-<body>
-    <div id="admin-container">
-        <div id="admin-header">Admin Support Chat</div>
-        <div style="display: flex; height: 100%;">
-            <div id="chat-list"></div>
-            <div id="chat-view">
-                <div id="messages"></div>
-                <div id="admin-input">
-                    <input type="text" id="message" placeholder="Type a message" />
-                    <button id="send-btn">Send</button>
-                    <button id="end-chat-btn">End Chat</button>
-                </div>
-            </div>
-        </div>
+<body>                  
+    <h1>Admin User Management</h1>
+    <div>
+      <button class="btn" onclick="window.location.href='https://trendymovies.github.io/manage-order-guwenfuh6/'">Orders</button>
+      <button class="btn" onclick="window.location.href='https://trendymovies.github.io/refer-track/'">Refer track</button>
+      <button class="btn" onclick="window.location.href='https://trendymovies.github.io/manage-product-vnvbnfs/'">exchange store</button>
+      <button class="btn" onclick="window.location.href='https://trendymovies.github.io/admin-chat/'">Chats</button>
+  </div>
+    <input type="text" id="searchInput" placeholder="Search by Name or Email" style="margin-bottom: 10px; width: 100%; padding: 8px;">
+
+    <table>
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Email</th>
+                <th>Referral Code</th>
+                <th>Last Login Date</th>
+                <th>Login Method</th>
+                <th>Status</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody id="userTable"></tbody>
+    </table>
+
+    <div class="overlay" id="overlay"></div>
+
+    <!-- Themed Popup for User Details -->
+    <div class="popup" id="userDetailsPopup">
+        <div class="popup-header">User Details</div>
+        <img id="userPhoto" src="" alt="User Photo" style="width: 100px; height: 100px; border-radius: 50%; margin-bottom: 10px;">
+        <p><b>Name:</b> <span id="popupUserName"></span></p>
+        <p><b>Email:</b> <span id="popupUserEmail"></span></p>
+        <p><b>Referral Code:</b> <span id="popupUserReferralCode"></span></p>
+        <p><b>Total Referrals:</b> <span id="popupUserTotalReferrals"></span></p>
+        <p><b>Points:</b> <span id="popupUserPoints"></span></p>
+        <p><b>Status:</b> <span id="popupUserStatus"></span></p>
+        <p id="unbanCooldown" style="display: none;"><b>Unban Cooldown:</b> <span id="cooldownTimer"></span></p>
+        <button class="button ban" onclick="showBanPopup()">Ban User</button>
+        <button class="button unban" id="unbanButton" onclick="unbanUserFromPopup()" style="display: none;">Unban User</button>
+        <button class="button delete" onclick="deleteUser()">Delete User</button>
+        <button class="button" onclick="closePopup()">Close</button>
     </div>
 
-    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+    <!-- Ban Details Popup -->
+    <div class="popup" id="banDetailsPopup" style="display: none;">
+        <div class="popup-header">Ban User</div>
+        <p><b>Reason for Ban:</b></p>
+        <input type="text" id="banReason" style="width: 100%; margin-bottom: 10px;">
+        <p><b>Duration (in days, leave blank for permanent):</b></p>
+        <input type="number" id="banDuration" style="width: 100%; margin-bottom: 10px;">
+        <button class="button ban" onclick="banUserFromPopup()">Confirm Ban</button>
+        <button class="button" onclick="closeBanPopup()">Cancel</button>
+    </div>
+
     <script>
+        // Firebase configuration
         const firebaseConfig = {
-            apiKey: "AIzaSyDCShDVg6W0EWmQ4a1OjOyZol_PkqpU9Pk",
-            authDomain: "suport-chating.firebaseapp.com",
-            projectId: "suport-chating",
-            storageBucket: "suport-chating.appspot.com",
-            messagingSenderId: "807714766249",
-            appId: "1:807714766249:web:a4442b0f210cfbf6fe18b8",
-            measurementId: "G-1CN87KYLDE"
+            apiKey: "AIzaSyCBPGSYNVaPPDu7RWee9ymckMaI1VQNjd4",
+            authDomain: "trendy-movie.firebaseapp.com",
+            databaseURL: "https://trendy-movie-default-rtdb.firebaseio.com",
+            projectId: "trendy-movie",
+            storageBucket: "trendy-movie.firebasestorage.app",
+            messagingSenderId: "699469684359",
+            appId: "1:699469684359:web:34cc2adfc8019b89a76222",
+            measurementId: "G-54SX69JVY3"
         };
+
+        // Initialize Firebase
         firebase.initializeApp(firebaseConfig);
-
         const db = firebase.database();
-        const chatList = document.getElementById('chat-list');
-        const messages = document.getElementById('messages');
-        const messageInput = document.getElementById('message');
-        const sendBtn = document.getElementById('send-btn');
-        const endChatBtn = document.getElementById('end-chat-btn');
 
-        let activeChat = null;
+        const userTable = document.getElementById('userTable');
+        const searchInput = document.getElementById('searchInput');
 
-        db.ref('chats').on('value', (snapshot) => {
-            chatList.innerHTML = '';
-            snapshot.forEach((child) => {
-                const chat = child.key;
-                const div = document.createElement('div');
-                div.textContent = chat;
-                const unreadDot = document.createElement('span');
-                unreadDot.classList.add('unread-dot');
-                div.appendChild(unreadDot);
+        let users = []; // Store fetched users locally
 
-                db.ref('chats/' + chat).once('value', (dataSnapshot) => {
-                    const messages = dataSnapshot.val();
-                    const hasUnread = Object.values(messages || {}).some((msg) => msg.sender === 'user' && !msg.seenByAdmin);
-                    if (hasUnread) {
-                        unreadDot.style.display = 'block';
-                    } else {
-                        unreadDot.style.display = 'none';
-                    }
-                });
-
-                div.addEventListener('click', () => {
-                    if (activeChat !== chat) {
-                        activeChat = chat;
-                        loadMessages(chat);
-                        Array.from(chatList.children).forEach((child) => child.classList.remove('active'));
-                        div.classList.add('active');
-                        db.ref('chats/' + chat).once('value', (snapshot) => {
-                            const chatMessages = snapshot.val();
-                            for (let key in chatMessages) {
-                                if (chatMessages[key].sender === 'user') {
-                                    db.ref('chats/' + chat + '/' + key).update({ seenByAdmin: true });
-                                }
-                            }
-                            unreadDot.style.display = 'none';
-                        });
-                    }
-                });
-                chatList.appendChild(div);
-            });
+      // Fetch users and display the latest registered on top
+function fetchUsers() {
+    db.ref('users').on('value', (snapshot) => {
+        users = [];
+        userTable.innerHTML = '';
+        snapshot.forEach((childSnapshot) => {
+            const user = childSnapshot.val();
+            const userId = childSnapshot.key;
+            users.push({ ...user, id: userId });
         });
 
-        function loadMessages(chat) {
-            messages.innerHTML = '';
-            db.ref('chats/' + chat).on('child_added', (snapshot) => {
-                const msgKey = snapshot.key;
-                const msg = snapshot.val();
-                const msgDiv = document.createElement('div');
-                msgDiv.classList.add('message', msg.sender);
+        // Sort users by registrationTime (latest first)
+        users.sort((a, b) => new Date(b.registrationTime) - new Date(a.registrationTime));
 
-                const urlRegex = /(https?:\/\/[\w-]+(?:\.[\w-]+)+(?:\/[\w-./?%&=]*)?)/gi;
-                const formattedText = msg.text.replace(urlRegex, (url) => {
-                    return `<a href="${url}" target="_blank">${url}</a>`;
-                });
+        // Render the sorted users
+        users.forEach(user => renderUserRow(user, user.id));
+    });
+}
 
-                msgDiv.innerHTML = `<div class="content">${formattedText} <small>${new Date(msg.timestamp).toLocaleTimeString()}</small></div>`;
-                const deleteBtn = document.createElement('span');
-                deleteBtn.textContent = '✖';
-                deleteBtn.style.cursor = 'pointer';
-                deleteBtn.style.marginLeft = '10px';
-                deleteBtn.style.color = 'red';
-                deleteBtn.addEventListener('click', () => {
-                    if (confirm('Are you sure you want to delete this message?')) {
-                        db.ref('chats/' + chat + '/' + msgKey).remove();
-                    }
-                });
+function renderUserRow(user, userId) {
+    // Format the last login time or show "Never Logged In" if not available
+    const lastLogin = user.lastLoginTime 
+        ? new Date(user.lastLoginTime).toLocaleString() 
+        : "Never Logged In";
 
-                msgDiv.appendChild(deleteBtn);
-                messages.appendChild(msgDiv);
-                messages.scrollTop = messages.scrollHeight;
+    userTable.innerHTML += `
+        <tr>
+            <td>${user.name}</td>
+            <td>${user.email}</td>
+            <td>${user.referralCode}</td>
+            <td>${lastLogin}</td>
+            <td>${user.loginMethod}</td>
+            <td>${user.status || 'Active'}</td>
+            <td>
+                <button class="button view" onclick="viewDetails('${userId}')">View</button>
+            </td>
+        </tr>`;
+}
+
+       
+        fetchUsers();
+
+        // Filter users based on search input
+searchInput.addEventListener('input', () => {
+    const query = searchInput.value.toLowerCase().trim(); // Normalize the search query
+    userTable.innerHTML = '';
+    users
+        .filter(user => 
+            user.name?.toLowerCase().includes(query) || 
+            user.email?.toLowerCase().includes(query) || 
+            user.referralCode?.toLowerCase().includes(query)
+        )
+        .forEach(user => renderUserRow(user, user.id));
+});
+
+
+        // View user details in a popup
+        function viewDetails(userId) {
+            db.ref(`users/${userId}`).once('value', (snapshot) => {
+                const user = snapshot.val();
+                document.getElementById('userPhoto').src = user.photoURL;
+                document.getElementById('popupUserName').innerText = user.name;
+                document.getElementById('popupUserEmail').innerText = user.email;
+                document.getElementById('popupUserReferralCode').innerText = user.referralCode;
+                document.getElementById('popupUserTotalReferrals').innerText = user.totalReferrals;
+                document.getElementById('popupUserPoints').innerText = user.points;
+                document.getElementById('popupUserStatus').innerText = user.status || 'Active';
+
+                // Display unban cooldown if the user is banned
+                if (user.status === 'Banned') {
+                    db.ref(`bans/${userId}`).once('value', (banSnapshot) => {
+                        const banDetails = banSnapshot.val();
+                        if (banDetails && banDetails.duration) {
+                            const banEndDate = new Date(banDetails.startDate);
+                            banEndDate.setDate(banEndDate.getDate() + (banDetails.duration === 'Permanent' ? 0 : banDetails.duration));
+                            displayCooldown(banEndDate);
+                        }
+                    });
+                    document.getElementById('unbanButton').style.display = 'inline-block';
+                    document.getElementById('unbanCooldown').style.display = 'block';
+                } else {
+                    document.getElementById('unbanButton').style.display = 'none';
+                    document.getElementById('unbanCooldown').style.display = 'none';
+                }
+
+                document.getElementById('overlay').style.display = 'block';
+                document.getElementById('userDetailsPopup').style.display = 'block';
+                document.getElementById('userDetailsPopup').dataset.userId = userId; // Store userId in the popup for actions
             });
         }
 
-        sendBtn.addEventListener('click', () => {
-            const text = messageInput.value.trim();
-            if (text && activeChat) {
-                db.ref('chats/' + activeChat).push({
-                    text,
-                    sender: 'admin',
-                    timestamp: Date.now()
-                });
-                messageInput.value = '';
-            }
-        });
+        function closePopup() {
+            document.getElementById('overlay').style.display = 'none';
+            document.getElementById('userDetailsPopup').style.display = 'none';
+        }
 
-        endChatBtn.addEventListener('click', () => {
-            if (activeChat && confirm('Are you sure you want to end this chat?')) {
-                db.ref('chats/' + activeChat).remove().then(() => {
-                    activeChat = null;
-                    messages.innerHTML = '';
-                    Array.from(chatList.children).forEach((child) => child.classList.remove('active'));
-                });
-            }
-        });
+        function showBanPopup() {
+            document.getElementById('banDetailsPopup').style.display = 'block';
+        }
+
+        function closeBanPopup() {
+            document.getElementById('banDetailsPopup').style.display = 'none';
+        }
+
+        function banUserFromPopup() {
+            const userId = document.getElementById('userDetailsPopup').dataset.userId;
+            const reason = document.getElementById('banReason').value;
+            const duration = document.getElementById('banDuration').value;
+
+            const now = new Date();
+            const unbanDate = duration === '' || duration === '0' ? 'Permanent' : new Date(now.setDate(now.getDate() + parseInt(duration)));
+
+            db.ref(`users/${userId}`).once('value', (snapshot) => {
+                const user = snapshot.val();
+                const banDetails = {
+                    reason,
+                    duration: duration === '' || duration === '0' ? 'Permanent' : parseInt(duration),
+                    startDate: now.toISOString(),
+                    unbanDate: unbanDate === 'Permanent' ? null : unbanDate.toISOString(),
+                    email: user.email,
+                    uid: userId,
+                };
+
+                db.ref(`bans/${userId}`).set(banDetails);
+                db.ref(`users/${userId}`).update({ status: 'Banned' });
+
+                alert(`User has been banned. ${unbanDate === 'Permanent' ? 'Permanent ban applied.' : 'Unban date is ' + unbanDate.toLocaleString()}`);
+
+                closeBanPopup();
+                closePopup();
+            });
+        }
+
+        function unbanUserFromPopup() {
+            const userId = document.getElementById('userDetailsPopup').dataset.userId;
+
+            db.ref(`users/${userId}`).update({ status: 'Active' });
+            db.ref(`bans/${userId}`).remove();
+
+            alert('User has been unbanned.');
+
+            closePopup();
+        }
+
+        function deleteUser() {
+            const userId = document.getElementById('userDetailsPopup').dataset.userId;
+            db.ref(`users/${userId}`).remove();
+            db.ref(`bans/${userId}`).remove();
+
+            alert('User has been deleted.');
+            closePopup();
+        }
+
+        // Display ban cooldown
+        function displayCooldown(endDate) {
+            const cooldownTimer = document.getElementById('cooldownTimer');
+            const interval = setInterval(() => {
+                const timeRemaining = endDate - new Date();
+                if (timeRemaining <= 0) {
+                    clearInterval(interval);
+                    cooldownTimer.innerText = 'Expired';
+                } else {
+                    const hours = Math.floor(timeRemaining / (1000 * 60 * 60));
+                    const minutes = Math.floor((timeRemaining % (1000 * 60 * 60)) / (1000 * 60));
+                    const seconds = Math.floor((timeRemaining % (1000 * 60)) / 1000);
+                    cooldownTimer.innerText = `${hours}h ${minutes}m ${seconds}s`;
+                }
+            }, 1000);
+        }
     </script>
 </body>
 </html>
